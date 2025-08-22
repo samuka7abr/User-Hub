@@ -29,6 +29,9 @@ func (r *Router) routes() {
 	r.Mux.HandleFunc("POST /v1/auth/signup", r.H.Signup)
 	r.Mux.HandleFunc("POST /v1/auth/login", r.H.Login)
 	r.Mux.HandleFunc("GET /v1/users/me", r.auth(r.H.Me))
+
+	r.Mux.HandleFunc("PATCH /v1/users/me/profile", r.auth(r.H.UpdateMyProfile))
+	r.Mux.HandleFunc("GET /v1/users/{id}/profile", r.H.GetProfile)
 }
 
 func (r *Router) auth(next http.HandlerFunc) http.HandlerFunc {

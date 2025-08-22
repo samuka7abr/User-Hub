@@ -71,3 +71,38 @@ func (h *Handlers) Me(w http.ResponseWriter, r *http.Request) {
 	}
 	httputil.WriteJSON(w, http.StatusOK, map[string]any{"id": u.ID, "email": u.Email, "created_at": u.CreatedAt})
 }
+
+type profileUpdateReq struct {
+	Name      string `json:"name"`
+	Bio       string `json:"bio"`
+	AvatarURL string `json:"avatar_url"`
+}
+
+func (h *Handlers) UpdateMyProfile(w http.ResponseWriter, r *http.Request) {
+	uid, _ := r.Context().Value(ctxUserID{}).(string)
+	var req profileUpdateReq
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httputil.Error(w, http.StatusBadRequest, "invalid json")
+		return
+	}
+	p, err := h.Svc.UpdateProfile(uid, req.Name, req.Bio, req.AvatarURL)
+	if err != nil {
+		if err == app.ErrNotFound {
+			httputil.Error(w, http.StatusNotFound, "user not found")
+			return
+		}
+		httputil.Error(w, http.StatusInternalServerError, "update error")
+		return
+	}
+	httputil.WriteJSON(w, http.StatusOK, map[string]any{"profile": p})
+}
+
+func (h *Handlers) GetProfile(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	p, err := h.Svc.GetProfile(id)
+	if err != nil {
+		httputil.Error(w, http.StatusNotFound, "not found")
+		return
+	}
+	httputil.WriteJSON(w, http.StatusOK, map[string]any{"profile": p})
+}

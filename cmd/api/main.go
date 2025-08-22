@@ -23,10 +23,11 @@ func main(){
 	pepper := []byte(env("APP_PEPPER", "dev-pepper"))
 
 	repo := memory.NewUserRepo()
+	profileRepo := memory.NewProfileRepo()
 	hasher := security.NewHasher(pepper)
 	jwt := security.NewJWT(secret)
 
-	svc := &app.Service{Repo: repo, Hash: hasher, Token: jwt}
+	svc := &app.Service{Repo: repo, Profiles: profileRepo, Hash: hasher, Token: jwt}
 	h := &httpport.Handlers{Svc: svc}
 	router := httpport.NewRouter(h, jwt)
 
